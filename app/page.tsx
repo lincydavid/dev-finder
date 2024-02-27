@@ -9,8 +9,14 @@ import {
   faMapMarker,
 } from "@fortawesome/free-solid-svg-icons";
 import { faTwitter } from "@fortawesome/free-brands-svg-icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+
+
 
 const HomePage = () => {
+
+
   interface User {
     login: string;
     name: string;
@@ -27,8 +33,11 @@ const HomePage = () => {
   }
 
   let url = "";
+
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [textInput, setTextInput] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTextInput(e.target.value);
@@ -37,29 +46,46 @@ const HomePage = () => {
   const handleButtonClick: React.MouseEventHandler<HTMLButtonElement> = async (
     event
   ) => {
-    url = "https://api.github.com/users/" + textInput;
-    event.preventDefault();
-    await fetchUser();
+    if (textInput !== "") {
+      setErrorMessage("");
+     
+      url = "https://api.github.com/users/" + textInput;
+      event.preventDefault();
+      await fetchUser();
+    } else {
+      setUser(null)
+      setErrorMessage("Search field cannot be empty");
+    }
   };
   const fetchUser = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(url);
       setUser(res.data);
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      setUser(null)
+      setTextInput('')
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
   };
   return (
     <div className="min-h-screen flex justify-center items-center bg-customBackground">
       <div className="flex flex-col h-full">
         <div className="rounded p-2 m-2 justify-center items-center flex">
-          <input
-            className="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 bg-customeDiv text-white placeholder-gray-400"
-            type="text"
-            value={textInput}
-            onChange={handleInputChange}
-            placeholder="Search"
-          />
+          <div className="relative flex items-center">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <FontAwesomeIcon icon={faSearch} className="h-5 w-5 text-white" />
+            </div>
+            <input
+              className="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 bg-customeDiv text-white placeholder-gray-400"
+              type="text"
+              value={textInput}
+              onChange={handleInputChange}
+              placeholder="Search"
+            />{" "}
+          </div>
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={handleButtonClick}
@@ -67,8 +93,21 @@ const HomePage = () => {
             Search
           </button>
         </div>
-        <div className="bg-customeDiv p-8 rounded-lg text-white">
-          {user && (
+        {errorMessage && (
+          <div
+            className="rounded mb-2 mt-0 justify-center items-center flex"
+            style={{ color: "red" }}
+          >
+            {errorMessage}
+          </div>
+        )}
+         {loading ? (
+           <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2 text-white" />
+        ) : (
+          ''
+        )}
+        {user && (
+          <div className="bg-customeDiv p-8 rounded-lg text-white">
             <div>
               <div className="flex">
                 <div className="w-1/2 m-5">
@@ -110,7 +149,9 @@ const HomePage = () => {
                 <div className="w-1/2 text-right">
                   <FontAwesomeIcon icon={faTwitter} className="text-white" />
                   <label className="m-1 text-sm">
-                    {user.twitter_username ? user.twitter_username : "Not Available"}
+                    {user.twitter_username
+                      ? user.twitter_username
+                      : "Not Available"}
                   </label>
                 </div>
               </div>
@@ -129,8 +170,8 @@ const HomePage = () => {
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
