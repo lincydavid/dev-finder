@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import axios from "axios";
+// import { useTheme } from "./contexts/ThemeContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBuilding,
@@ -10,12 +11,11 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
 
-
-
-const HomePage = () => {
-
+const HomePage: React.FC = () => {
+  //const { darkMode, toggleDarkMode } = useTheme();
 
   interface User {
     login: string;
@@ -30,6 +30,9 @@ const HomePage = () => {
     twitter_username: string;
     url: string;
     html_url: string;
+    created_at: string;
+    received_events_url: string;
+    node_id: string;
   }
 
   let url = "";
@@ -48,12 +51,12 @@ const HomePage = () => {
   ) => {
     if (textInput !== "") {
       setErrorMessage("");
-     
+
       url = "https://api.github.com/users/" + textInput;
       event.preventDefault();
       await fetchUser();
     } else {
-      setUser(null)
+      setUser(null);
       setErrorMessage("Search field cannot be empty");
     }
   };
@@ -63,9 +66,9 @@ const HomePage = () => {
       const res = await axios.get(url);
       setUser(res.data);
     } catch (error) {
-      setUser(null)
-      setTextInput('')
-      console.error('Error fetching data:', error);
+      setUser(null);
+      setTextInput("");
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
@@ -73,6 +76,15 @@ const HomePage = () => {
   return (
     <div className="min-h-screen flex justify-center items-center bg-customBackground">
       <div className="flex flex-col h-full">
+        <div className="flex justify-between  mt-9">
+          <div className="flex items-center">
+            <label className="text-white font-extrabold">devfinder</label>
+          </div>
+          <div className="flex items-center text-white">
+            <FontAwesomeIcon className="text-white" icon={faSun} />
+          </div>
+        </div>
+
         <div className="rounded p-2 m-2 justify-center items-center flex">
           <div className="relative flex items-center">
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
@@ -101,10 +113,13 @@ const HomePage = () => {
             {errorMessage}
           </div>
         )}
-         {loading ? (
-           <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2 text-white" />
+        {loading ? (
+          <FontAwesomeIcon
+            icon={faSpinner}
+            className="animate-spin mr-2 text-white"
+          />
         ) : (
-          ''
+          ""
         )}
         {user && (
           <div className="bg-customeDiv p-8 rounded-lg text-white">
@@ -122,8 +137,18 @@ const HomePage = () => {
                 <div className="w-1/2 m-5">
                   <p>{user.name}</p>
                   <p className="text-blue-500 font-bold">{user.id}</p>
-                  <p>{user.bio}</p>
+                  <p>
+                    Joined
+                    {" " +
+                      new Intl.DateTimeFormat("en-US").format(
+                        new Date(user.created_at)
+                      )}
+                  </p>
                 </div>
+              </div>
+              <div className="flex p-4 text-white mb-2"></div>
+              <div className="max-w-lg mx-auto">
+                <p className="text-center mb-5">{user.bio}</p>
               </div>
               <div className="flex bg-customBackground p-2 text-white mb-2">
                 <div className="w-1/2">
@@ -162,10 +187,10 @@ const HomePage = () => {
                     {user.html_url ? user.html_url : "Not Available"}
                   </label>
                 </div>
-                <div className="flex w-1/2 text-right">
+                <div className="w-1/2 text-right">
                   <FontAwesomeIcon icon={faBuilding} className="text-white" />
                   <label className="m-1 text-sm">
-                    {user.url ? user.url : "Not Available"}
+                    {"Not Available"}
                   </label>
                 </div>
               </div>
